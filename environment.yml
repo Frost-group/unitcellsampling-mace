@@ -1,0 +1,14 @@
+name: macegrid
+channels:
+  - defaults
+dependencies:
+  - ase
+  - ca-certificates
+  - certifi
+  - matscipy
+  - numpy=1.26
+  - openssl
+  - pip
+  - python=3.11
+  - scipy
+prefix: /opt/anaconda3/envs/macegrid
