@@ -102,7 +102,7 @@ class UnitCellSampler:
             # Otherwise: Use internal grid points
             included_grid_points = self.included_grid_vectors.flatten()
             grid_points = self.grid_vectors.reshape(
-                np.product(self.grid_vectors.shape[:-1]),
+                np.prod(self.grid_vectors.shape[:-1]),
                 self.grid_vectors.shape[-1])
             
             # These are set for proper logging 
@@ -160,7 +160,7 @@ class UnitCellSampler:
         energies = np.empty(grid_points.shape[0], dtype=np.float64)
         for idx, grid_point in enumerate(grid_points):
             if not included_grid_points[idx]:
-                energies[idx] = np.inf
+                energies[idx] = np.nan
                 #print(np.array2string(get_fractional_coords(
                 #      grid_point, self.atoms.cell[:]),
                 #    formatter={'float_kind': lambda x: "%.7f" % x}),
@@ -174,7 +174,7 @@ class UnitCellSampler:
                 grid_point_index[1] = grid_point_index[1]*self.n_frac[1]*self.n_supercell[1]
                 grid_point_index[2] = grid_point_index[2]*self.n_frac[2]*self.n_supercell[2]
                 grid_point_index = np.array(
-                    np.around(grid_point_index), dtype=np.int)
+                    np.around(grid_point_index), dtype=int)
 
                 if bool_grid.get_value(*grid_point_index):
                     energies[idx] = energies_grid.get_value(*grid_point_index)
@@ -238,17 +238,22 @@ class UnitCellSampler:
             energies = energies.astype(np.float32)
         
         if normalize:
-            min_grid_energy = energies.min()
-            print("Normalizing grid by shifting minimum energy to 0.0, i.e. subtracting minimum energy.")
-            print("Minimum grid energy: ", min_grid_energy)
-            print("Added shift: ", -min_grid_energy)
-            energies = energies - min_grid_energy
+            finite_mask = np.isfinite(energies)
+
+            if np.any(finite_mask):
+                min_grid_energy = np.nanmin(energies)
+                print("Normalizing grid by shifting minimum finite energy to 0.0.")
+                print("Minimum finite grid energy: ", min_grid_energy)
+                print("Added shift: ", -min_grid_energy)
+
+                energies[finite_mask] = energies[finite_mask] - min_grid_energy
+            else:
+                print("No finite energies found; skipping normalization.")
         else:
             print("normalize =", normalize)
             print("Final normalization of grid disabled: minimum energy is NOT shifted to 0.0.")
-        np.nan_to_num(energies, copy=False)
 
-        return energies.reshape(included_grid_points.shape)
+        return energies.reshape(self.n_frac)
 
 
     def generate_grid_vectors(self, n_frac=(10, 10, 10), abs=None, 
@@ -471,46 +476,54 @@ class UnitCellSampler:
 
 
     def _log_calculate_energies_after(self, grid_points,
-                                      included_grid_points,
-                                      n_exploited_symmetry,
-                                      included_radial_cutoff=None,
-                                      included_vdw=None):
+                                    included_grid_points,
+                                    n_exploited_symmetry,
+                                    included_radial_cutoff=None,
+                                    included_vdw=None):
         print("Sampling completed.")
 
         print("=============================================")
         print("==          GRID SAMPLING SUMMARY          ==")
         print("=============================================")
+
         if self.n_frac:
             print("Total grid shape:", self.n_frac)
-        print("Number of total grid points:", grid_points.shape[0])
-        actual_num_calcs = (grid_points.shape[0] - n_exploited_symmetry -
-              (np.size(included_grid_points)
-               - np.count_nonzero(included_grid_points)))
+
+        total_grid_points = grid_points.shape[0]
+        neglected_combined = np.size(included_grid_points) - np.count_nonzero(included_grid_points)
+        actual_num_calcs = total_grid_points - n_exploited_symmetry - neglected_combined
+
+        print("Number of total grid points:", total_grid_points)
         print("Total number of actual calculations:", actual_num_calcs)
         print("Number of neglected grid points from combined spherical exclusion:",
-              np.size(included_grid_points)
-              - np.count_nonzero(included_grid_points))
-        
+            neglected_combined)
+
         if included_radial_cutoff is not None:
+            neglected_radial = np.size(included_radial_cutoff) - np.count_nonzero(included_radial_cutoff)
             print("Number of neglected grid points from cutoff radii:",
-                  np.size(included_radial_cutoff) - np.count_nonzero(included_radial_cutoff))
-            
+                neglected_radial)
+
         if included_vdw is not None:
+            neglected_vdw = np.size(included_vdw) - np.count_nonzero(included_vdw)
             print("Number of neglected grid points from scaled van der Waals radii:",
-                  np.size(included_vdw) - np.count_nonzero(included_vdw))
-            
+                neglected_vdw)
 
         print("Number of saved calculations due to symmetry:",
-              n_exploited_symmetry)
+            n_exploited_symmetry)
 
-        total_time = time.time()-self.start
-
+        total_time = time.time() - self.start
         print("Total calculation time was {:.7f} seconds".format(total_time))
-        print("Average time/grid point calculation: {:.7f} s".format(
-                                         total_time/actual_num_calcs))
-        print("Extrapolated est. time for full grid: {:.7f} s".format(
-                   grid_points.shape[0] * total_time/actual_num_calcs))
-        print("Estimated time saved: {:.7f} s".format(
-            (grid_points.shape[0] * total_time/actual_num_calcs) - total_time))
+
+        if actual_num_calcs > 0:
+            avg_time = total_time / actual_num_calcs
+            full_grid_est_time = total_grid_points * avg_time
+            est_time_saved = full_grid_est_time - total_time
+
+            print("Average time/grid point calculation: {:.7f} s".format(avg_time))
+            print("Extrapolated est. time for full grid: {:.7f} s".format(full_grid_est_time))
+            print("Estimated time saved: {:.7f} s".format(est_time_saved))
+        else:
+            print("No actual calculations performed; timing per point not available.")
+
         print("=============================================")
         print()
