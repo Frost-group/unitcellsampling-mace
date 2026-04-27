@@ -26,13 +26,13 @@ from mace.calculators import mace_mp
 from unitcellsampling.sample import UnitCellSampler
 
 # 1) load full structure
-atoms = read("NaTaCl6.cif")
+atoms = read("Li2CuSb.cif")
 
 # 2) remove mobile ions to make the rigid framework
-framework = atoms[[atom.index for atom in atoms if atom.symbol != "Na"]]
+framework = atoms[[atom.index for atom in atoms if atom.symbol != "Li"]]
 
 # optional: save for inspection
-write("TaCl6_framework.cif", framework)
+write("CuSb_framework.cif", framework)
 
 print("Original structure:", atoms)
 print("Framework only:", framework)
@@ -63,7 +63,7 @@ def mace_method(atoms_with_probe):
 # 7) sample one Na over the empty framework
 energies = sampler.calculate_energies(
     method=mace_method,
-    atom="Na",
+    atom="Li",
     exploit_symmetry=False,
     normalize=True,
 )
@@ -75,6 +75,6 @@ print("Grid shape:", energies.shape)
 print("Min energy:", energies.min())
 print("Max energy:", energies.max())
 
-np.save("NaTaCl6_Na_probe_mace_grid.npy", energies)
-np.save("NaTaCl6_Na_probe_mask.npy", sampler.included_grid_vectors)
-print("Saved grid to NaTaCl6_Na_probe_mace_grid.npy")
+np.save("Li2CuSb_Li_probe_mace_grid.npy", energies)
+np.save("Li2CuSb_Li_probe_mask.npy", sampler.included_grid_vectors)
+print("Saved grid to Li2CuSb_Li_probe_mace_grid.npy")
