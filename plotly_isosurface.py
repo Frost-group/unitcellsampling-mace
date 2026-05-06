@@ -1,7 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
 
-grid = np.load("NaTaCl6_Na_probe_mace_grid.npy").astype(float)
+grid = np.load("Li10Ge(PS6)2_Li_probe_mace_grid.npy").astype(float)
 fill_value = np.nanmax(grid) + 5.0
 grid[np.isnan(grid)] = fill_value
 
@@ -18,5 +18,5 @@ fig = go.Figure(data=go.Isosurface(
     surface_count=5,
     caps=dict(x_show=False, y_show=False, z_show=False),
 ))
-fig.update_layout(title="Na probe PES isosurfaces")
+fig.update_layout(title="Li probe PES isosurfaces")
 fig.show()

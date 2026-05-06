@@ -26,13 +26,13 @@ from mace.calculators import mace_mp
 from unitcellsampling.sample import UnitCellSampler
 
 # 1) load full structure
-atoms = read("Li2CuSb.cif")
+atoms = read("Li10Ge(PS6)2.cif")
 
 # 2) remove mobile ions to make the rigid framework
 framework = atoms[[atom.index for atom in atoms if atom.symbol != "Li"]]
 
 # optional: save for inspection
-write("CuSb_framework.cif", framework)
+write("GePS_framework.cif", framework)
 
 print("Original structure:", atoms)
 print("Framework only:", framework)
@@ -42,7 +42,7 @@ sampler = UnitCellSampler(framework)
 
 # 4) generate a tiny test grid first
 sampler.generate_grid_vectors(
-    n_frac=(20, 20, 20),
+    n_frac=(44, 44, 64),
     cutoff_radii=1.0,
     vdw_scale=None,
     midvox=True,
@@ -75,6 +75,6 @@ print("Grid shape:", energies.shape)
 print("Min energy:", energies.min())
 print("Max energy:", energies.max())
 
-np.save("Li2CuSb_Li_probe_mace_grid.npy", energies)
-np.save("Li2CuSb_Li_probe_mask.npy", sampler.included_grid_vectors)
-print("Saved grid to Li2CuSb_Li_probe_mace_grid.npy")
+np.save("Li10Ge(PS6)2_Li_probe_mace_grid.npy", energies)
+np.save("Li10Ge(PS6)2_Li_probe_mask.npy", sampler.included_grid_vectors)
+print("Saved grid to Li10Ge(PS6)2_Li_probe_mace_grid.npy")
