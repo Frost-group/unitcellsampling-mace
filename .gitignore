@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.npy
 
 # C extensions
 *.so
@@ -120,3 +121,5 @@ grid_gen_mod_local.py
 submit_mod_local.sh
 
 # .git
+
+*.npy
