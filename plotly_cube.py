@@ -1,9 +1,12 @@
 import numpy as np
 import plotly.graph_objects as go
+from ase.io.cube import read_cube_data
 
-grid = np.load("LGPS-tetra_probe_uff_grid.npy").astype(float)
-fill_value = np.nanmax(grid) + 5.0
-grid[np.isnan(grid)] = fill_value
+grid, atoms = read_cube_data("Li10Ge(PS6)2_Li_probe_mace_polar_grid.cube")
+grid = np.asarray(grid, dtype=float)
+
+fill_value = np.nanmax(grid[np.isfinite(grid)]) + 5.0
+grid[~np.isfinite(grid)] = fill_value
 
 nx, ny, nz = grid.shape
 x, y, z = np.mgrid[0:nx, 0:ny, 0:nz]
@@ -18,5 +21,5 @@ fig = go.Figure(data=go.Isosurface(
     surface_count=5,
     caps=dict(x_show=False, y_show=False, z_show=False),
 ))
-fig.update_layout(title="Li probe PES isosurfaces")
+fig.update_layout(title="Cube isosurfaces")
 fig.show()

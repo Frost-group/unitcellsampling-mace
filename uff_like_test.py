@@ -14,11 +14,11 @@ from unitcellsampling.sample import UnitCellSampler
 
 
 # 1) load full structure
-atoms = read("Li10Ge(PS6)2.cif")
+atoms = read("LGPS-tetra.cif")
 
 # 2) remove mobile Li to make rigid framework
 framework = atoms[[atom.index for atom in atoms if atom.symbol != "Li"]]
-write("GePS_framework.cif", framework)
+write("GePS-tetra.cif", framework)
 
 print("Original structure:", atoms)
 print("Framework only:", framework)
@@ -130,8 +130,8 @@ print("Grid shape:", energies.shape)
 print("Min energy:", np.nanmin(energies))
 print("Max energy:", np.nanmax(energies))
 
-np.save("Li10Ge(PS6)2_Li_probe_uff_grid.npy", energies)
-np.save("Li10Ge(PS6)2_Li_probe_uff_mask.npy", sampler.included_grid_vectors)
+np.save("LGPS-tetra_probe_uff_grid.npy", energies)
+np.save("LGPS-tetra_probe_uff_mask.npy", sampler.included_grid_vectors)
 
-print("Saved grid to Li10Ge(PS6)2_Li_probe_uff_grid.npy")
-print("Saved mask to Li10Ge(PS6)2_Li_probe_uff_mask.npy")
+print("Saved grid to LGPS-tetra_probe_uff_grid.npy")
+print("Saved mask to LGPS-tetra_probe_uff_mask.npy")

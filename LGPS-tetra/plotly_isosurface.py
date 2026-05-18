@@ -1,7 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
 
-grid = np.load("LGPS-tetra_probe_uff_grid.npy").astype(float)
+grid = np.load("LGPS-tetra_Li_probe_mace_polar_grid.npy").astype(float)
 fill_value = np.nanmax(grid) + 5.0
 grid[np.isnan(grid)] = fill_value
 
